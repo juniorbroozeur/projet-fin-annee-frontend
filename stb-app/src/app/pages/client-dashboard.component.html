@@ -1,0 +1,197 @@
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <h2>STB</h2>
+    <nav>
+      <ul>
+        <li [class.active]="activeSection === 'dashboard'" (click)="selectSection('dashboard')">
+          <fa-icon [icon]="faDashboard"></fa-icon> Dashboard
+        </li>
+        <li [class.active]="activeSection === 'profile'" (click)="selectSection('profile')">
+          <fa-icon [icon]="faUser"></fa-icon> Profil
+        </li>
+        <li [class.active]="activeSection === 'settings'" (click)="selectSection('settings')">
+          <fa-icon [icon]="faCogs"></fa-icon> Paramètres
+        </li>
+        <li (click)="logout()">
+          <fa-icon [icon]="faSignOutAlt"></fa-icon> Déconnexion
+        </li>
+      </ul>
+      <div class="staff-online">
+        <h3>Staff Online</h3>
+        <ul></ul>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <h2>Bienvenue !</h2>
+        <div class="search-bar"></div>
+      </div>
+      <div class="header-right">
+        <div class="icon-group">
+          <fa-icon [icon]="faEnvelope"></fa-icon>
+          <fa-icon [icon]="faBell"></fa-icon>
+        </div>
+        <div class="user-profile">
+          <span>{{ client?.prenom }} {{ client?.nom }}</span>
+          <fa-icon [icon]="faChevronDown"></fa-icon>
+        </div>
+      </div>
+    </header>
+
+    <ng-container *ngIf="activeSection === 'dashboard'">
+
+      <!-- ✅ Message de confirmation après demande de carte -->
+      <p *ngIf="messageConfirmation && !showProbleme" style="color: green; font-weight: bold; margin: 10px 0;">{{ messageConfirmation }}</p>
+
+      <div class="top-info-cards">
+        <div class="info-card clickable-card" (click)="toggleSoldeDetails()">
+          <div class="card-icon"><fa-icon [icon]="faMoneyBill"></fa-icon></div>
+          <div class="card-content">
+            <h3>Solde actuel</h3>
+            <p class="card-value">{{ compte?.solde }} TND</p>
+            <span>Date de création: {{ compte?.dateCreation | date: 'shortDate' }}</span>
+            <p class="click-indicator">Cliquez pour voir les détails</p>
+          </div>
+        </div>
+
+        <div class="info-card clickable-card" (click)="toggleCartesDetails()">
+          <div class="card-icon"><fa-icon [icon]="faCreditCard"></fa-icon></div>
+          <div class="card-content">
+            <h3>Total Cartes</h3>
+            <p class="card-value">{{ cartes.length }} Cartes</p>
+            <span *ngIf="cartes.length > 0">Dernière carte: {{ cartes[0].numero.slice(-4) }}</span>
+            <span *ngIf="cartes.length === 0">Aucune carte enregistrée</span>
+            <p class="click-indicator">Cliquez pour gérer les cartes</p>
+          </div>
+        </div>
+
+        <div *ngIf="peutFaireDemande" class="card-request">
+          <button class="primary-btn" (click)="faireDemandeCarte()">💳 Demander une carte</button>
+        </div>
+
+        <div class="info-card clickable-card" (click)="toggleTransactionsList()">
+          <div class="card-icon"><fa-icon [icon]="faListAlt"></fa-icon></div>
+          <div class="card-content">
+            <h3>Transactions</h3>
+            <p class="card-value">Voir l'historique</p>
+            <span>Total: {{ transactions.length }} transactions</span>
+            <p class="click-indicator">Cliquez pour voir la liste</p>
+          </div>
+        </div>
+
+        <div class="info-card clickable-card" (click)="toggleProbleme()">
+          <div class="card-icon"><fa-icon [icon]="faExclamationCircle"></fa-icon></div>
+          <div class="card-content">
+            <h3>Signaler un problème</h3>
+            <p class="card-value">Besoin d'aide ?</p>
+            <span>Une question ou un souci ?</span>
+            <p class="click-indicator">Cliquez pour demander de l'aide</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="dashboard-section card detail-section" *ngIf="showSoldeDetails">
+        <h3 class="section-title"><fa-icon [icon]="faMoneyBill"></fa-icon> Détails du Solde</h3>
+        <p class="detail-value">Votre solde actuel est de: {{ compte?.solde }} TND</p>
+        <p>Date d'ouverture du compte: {{ compte?.dateCreation | date: 'fullDate' }}</p>
+        <button class="close-btn" (click)="toggleSoldeDetails()"><fa-icon [icon]="faTimes"></fa-icon></button>
+      </section>
+
+      <section class="dashboard-section card detail-section" *ngIf="showCartesDetails">
+        <h3 class="section-title"><fa-icon [icon]="faCreditCard"></fa-icon> Mes Cartes ({{ cartes.length }})</h3>
+        <div class="cartes-grid">
+          <div class="carte" *ngFor="let carte of cartes">
+            <div class="contenu-carte">
+              <p class="numero">{{ carte.numero }}</p>
+              <p class="date">Expire le: {{ carte.dateExpiration | date: 'MM/yy' }}</p>
+              <button class="action-btn">Détails</button>
+            </div>
+          </div>
+          <p *ngIf="cartes.length === 0">Aucune carte enregistrée.</p>
+        </div>
+        <button class="close-btn" (click)="toggleCartesDetails()"><fa-icon [icon]="faTimes"></fa-icon></button>
+      </section>
+
+      <section class="dashboard-section card detail-section" *ngIf="showTransactionsList">
+        <h3 class="section-title"><fa-icon [icon]="faListAlt"></fa-icon> Historique des Transactions</h3>
+        <div class="transactions-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Montant (TND)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of transactions">
+                <td>{{ t.date | date: 'shortDate' }}</td>
+                <td>{{ t.description }}</td>
+                <td [class.negative]="t.montant < 0">{{ t.montant }}</td>
+                <td>
+                  <button class="action-icon-btn"><fa-icon [icon]="faEye"></fa-icon></button>
+                  <button class="action-icon-btn"><fa-icon [icon]="faDownload"></fa-icon></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="transactions.length === 0">Aucune transaction récente.</p>
+        </div>
+        <button class="close-btn" (click)="toggleTransactionsList()"><fa-icon [icon]="faTimes"></fa-icon></button>
+      </section>
+
+      <section class="dashboard-section card problem-section" *ngIf="showProbleme">
+        <h3 class="section-title"><fa-icon [icon]="faExclamationCircle"></fa-icon> Signaler un problème</h3>
+        <textarea [(ngModel)]="problemeText" placeholder="Décrivez le problème..."></textarea>
+        <button class="primary-btn" (click)="signalerProbleme()">Envoyer</button>
+        <p *ngIf="messageConfirmation" style="color: green; font-weight: bold;">{{ messageConfirmation }}</p>
+        <p *ngIf="erreur && !messageConfirmation" class="erreur">{{ erreur }}</p>
+        <button class="close-btn" (click)="toggleProbleme()"><fa-icon [icon]="faTimes"></fa-icon></button>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="activeSection === 'profile'">
+      <section class="dashboard-section card profile-section">
+        <h3 class="section-title"><fa-icon [icon]="faUser"></fa-icon> Mon Profil</h3>
+        <div class="profile-details">
+          <p><strong>Nom Complet:</strong> {{ client?.nom }} {{ client?.prenom }}</p>
+          <p><strong>Email:</strong> {{ client?.email }}</p>
+          <p><strong>Téléphone:</strong> {{ client?.telephone }}</p>
+          <p><strong>Adresse:</strong> {{ client?.adresse }}</p>
+          <p><strong>CIN:</strong> {{ client?.cin }}</p>
+        </div>
+        <button class="primary-btn">Modifier le Profil</button>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="activeSection === 'settings'">
+      <section class="dashboard-section card settings-section">
+        <h3 class="section-title"><fa-icon [icon]="faCogs"></fa-icon> Paramètres</h3>
+        <div class="settings-options">
+          <h4>Sécurité</h4>
+          <button class="primary-btn">Changer le Mot de Passe</button>
+          <button class="primary-btn">Gérer les Sessions</button>
+
+          <h4>Préférences</h4>
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider round"></span>
+          </label> Mode Sombre
+          <p>Langue: Français <button class="small-btn">Changer</button></p>
+
+          <h4>Notifications</h4>
+          <input type="checkbox" id="notifEmail" checked>
+          <label for="notifEmail">Notifications par Email</label><br>
+          <input type="checkbox" id="notifSMS">
+          <label for="notifSMS">Notifications par SMS</label>
+        </div>
+      </section>
+    </ng-container>
+
+    <p *ngIf="erreur && !showProbleme" class="erreur">{{ erreur }}</p>
+  </main>
+</div>

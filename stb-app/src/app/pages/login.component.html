@@ -1,0 +1,41 @@
+<div class="login-container">
+  <div class="login-box">
+    <!-- Partie gauche (formulaire) -->
+    <div class="login-left">
+      <img src="assets/stb-logo.jpeg" alt="Logo STB" class="stb-logo">
+
+      <h2>Connexion</h2>
+
+      <form (ngSubmit)="login()">
+        <div class="input-group">
+          <span class="icon">📧</span>
+          <input type="email" [(ngModel)]="email" name="email" placeholder="Email address" required>
+        </div>
+
+        <div class="input-group">
+          <span class="icon">🔒</span>
+          <input type="password" [(ngModel)]="password" name="password" placeholder="Password" required>
+        </div>
+
+        <div class="remember-me">
+          <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" id="rememberMe">
+          <label for="rememberMe">Se souvenir de moi</label>
+        </div>
+
+        <button type="submit" class="login-button">Se connecter</button>
+
+        <div class="forgot-password">
+          Mot de passe oublié ?
+          <a href="#">Réinitialiser le mot de passe</a>
+        </div>
+
+        <p *ngIf="erreur" class="error-message">{{ erreur }}</p>
+      </form>
+    </div>
+
+    <!-- Partie droite (image banque) -->
+    <div class="login-right">
+<img src="assets/images.jpg" alt="STB Bank" class="bank-image">
+    </div>
+  </div>
+</div>

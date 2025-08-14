@@ -1,0 +1,348 @@
+<div class="dashboard-wrapper">
+  <aside class="sidebar">
+    <h2>STB Manager</h2>
+    <nav>
+      <ul>
+        <li [class.active]="activeSection === 'dashboard'" (click)="selectSection('dashboard')">
+          <fa-icon [icon]="faDashboard"></fa-icon> Dashboard
+        </li>
+        <li [class.active]="activeSection === 'cartes'" (click)="selectSection('cartes')">
+          <fa-icon [icon]="faCreditCard"></fa-icon> Gestion Cartes
+        </li>
+        <li [class.active]="activeSection === 'problemes'" (click)="selectSection('problemes')">
+          <fa-icon [icon]="faExclamationCircle"></fa-icon> Problèmes Clients
+        </li>
+        <!-- Vous pouvez ajouter une section pour la gestion des clients si nécessaire -->
+        <!-- <li [class.active]="activeSection === 'clients'" (click)="selectSection('clients')">
+          <fa-icon [icon]="faUserCircle"></fa-icon> Tous les Clients
+        </li> -->
+        <li [class.active]="activeSection === 'settings'" (click)="selectSection('settings')">
+          <fa-icon [icon]="faCogs"></fa-icon> Paramètres
+        </li>
+        <li (click)="logout()">
+          <fa-icon [icon]="faSignOutAlt"></fa-icon> Déconnexion
+        </li>
+      </ul>
+      <div class="staff-online">
+        <h3>Staff Online</h3>
+        <ul>
+          <!-- Liste des membres du staff en ligne (à remplir dynamiquement si l'API le permet) -->
+          <li><div class="online-indicator"></div> Alice (Active)</li>
+          <li><div class="online-indicator"></div> Bob (Active)</li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <h2>Tableau de Bord Gestionnaire</h2>
+        <div class="search-bar">
+          <input type="text" placeholder="Rechercher..." />
+          <fa-icon [icon]="faSearch"></fa-icon>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="icon-group">
+          <fa-icon [icon]="faEnvelope"></fa-icon>
+          <fa-icon [icon]="faBell"></fa-icon>
+        </div>
+        <div class="user-profile">
+          <span>{{ managerName }}</span> <!-- Affichage du nom du gestionnaire -->
+          <fa-icon [icon]="faChevronDown"></fa-icon>
+        </div>
+      </div>
+    </header>
+
+    <p *ngIf="messageSuccess" class="success-message">{{ messageSuccess }}</p>
+    <p *ngIf="erreur" class="error-message">{{ erreur }}</p>
+
+    <ng-container *ngIf="activeSection === 'dashboard'">
+      <div class="top-info-cards">
+        <div class="info-card clickable-card" (click)="togglePendingCards()">
+          <div class="card-icon"><fa-icon [icon]="faHourglassHalf"></fa-icon></div>
+          <div class="card-content">
+            <h3>Cartes en Attente</h3>
+            <p class="card-value">{{ cartesEnAttente.length }}</p>
+            <span>À valider</span>
+            <p class="click-indicator">Cliquez pour voir</p>
+          </div>
+        </div>
+
+        <div class="info-card clickable-card" (click)="toggleValidatedCards()">
+          <div class="card-icon"><fa-icon [icon]="faCheckCircle"></fa-icon></div>
+          <div class="card-content">
+            <h3>Cartes Validées</h3>
+            <p class="card-value">{{ cartesValidees.length }}</p>
+            <span>Actives</span>
+            <p class="click-indicator">Cliquez pour voir</p>
+          </div>
+        </div>
+
+        <div class="info-card clickable-card" (click)="toggleProblems()">
+          <div class="card-icon"><fa-icon [icon]="faExclamationCircle"></fa-icon></div>
+          <div class="card-content">
+            <h3>Problèmes Clients</h3>
+            <p class="card-value">{{ problemes.length }}</p>
+            <span>Nouveaux signalements</span>
+            <p class="click-indicator">Cliquez pour voir</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="dashboard-section card detail-section" *ngIf="showPendingCardsList">
+        <h3 class="section-title"><fa-icon [icon]="faHourglassHalf"></fa-icon> Cartes en Attente de Validation</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Carte</th>
+                <th>Numéro</th>
+                <th>Expiration</th>
+                <th>Client</th> <!-- Nouvelle colonne -->
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let carte of cartesEnAttente">
+                <td>{{ carte.id }}</td>
+                <td>{{ carte.numero }}</td>
+                <td>{{ carte.dateExpiration | date: 'MM/yy' }}</td>
+                <td>{{ carte.clientNom }} (ID: {{ carte.clientId }})</td> <!-- Affichage du nom et ID du client -->
+                <td>
+                  <button class="action-icon-btn validate-btn" (click)="validerCarte(carte.id)" title="Valider"><fa-icon [icon]="faCheck"></fa-icon></button>
+                  <button class="action-icon-btn delete-btn" (click)="supprimerCarte(carte.id)" title="Supprimer"><fa-icon [icon]="faTrashAlt"></fa-icon></button>
+                </td>
+              </tr>
+              <tr *ngIf="cartesEnAttente.length === 0">
+                <td colspan="5">Aucune carte en attente.</td> <!-- colspan ajusté -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dashboard-section card detail-section" *ngIf="showValidatedCardsList">
+        <h3 class="section-title"><fa-icon [icon]="faCheckCircle"></fa-icon> Cartes Validées</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Carte</th>
+                <th>Numéro</th>
+                <th>Expiration</th>
+                <th>Client</th> <!-- Nouvelle colonne -->
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let carte of cartesValidees">
+                <td>{{ carte.id }}</td>
+                <td>{{ carte.numero }}</td>
+                <td>{{ carte.dateExpiration | date: 'MM/yy' }}</td>
+                <td>{{ carte.clientNom }} (ID: {{ carte.clientId }})</td> <!-- Affichage du nom et ID du client -->
+                <td>
+                  <button class="action-icon-btn revert-btn" (click)="remettreEnAttente(carte.id)" title="Remettre en attente"><fa-icon [icon]="faReply"></fa-icon></button>
+                  <button class="action-icon-btn delete-btn" (click)="supprimerCarte(carte.id)" title="Supprimer"><fa-icon [icon]="faTrashAlt"></fa-icon></button>
+                </td>
+              </tr>
+              <tr *ngIf="cartesValidees.length === 0">
+                <td colspan="5">Aucune carte validée.</td> <!-- colspan ajusté -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="dashboard-section card detail-section" *ngIf="showProblemsList">
+        <h3 class="section-title"><fa-icon [icon]="faExclamationCircle"></fa-icon> Problèmes Signalés</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Problème</th>
+                <th>Description</th>
+                <th>Date Signalement</th>
+                <th>Statut</th>
+                <th>Client</th> <!-- Nouvelle colonne -->
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let problem of problemes">
+                <td>{{ problem.id }}</td>
+                <td>{{ problem.description }}</td>
+                <td>{{ problem.dateSignalement | date: 'mediumDate' }}</td>
+                <td>{{ problem.statut }}</td>
+                <td>{{ problem.clientNom }} (ID: {{ problem.clientId }})</td> <!-- Affichage du nom et ID du client -->
+                <td>
+                  <button class="action-icon-btn view-btn" title="Voir les détails"><fa-icon [icon]="faEye"></fa-icon></button>
+                  <!-- Vous pouvez ajouter des actions ici pour résoudre ou répondre aux problèmes -->
+                </td>
+              </tr>
+              <tr *ngIf="problemes.length === 0">
+                <td colspan="6">Aucun problème signalé.</td> <!-- colspan ajusté -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="activeSection === 'cartes'">
+      <section class="dashboard-section card">
+        <h3 class="section-title"><fa-icon [icon]="faCreditCard"></fa-icon> Gestion des Cartes</h3>
+        <p>Utilisez les boutons ci-dessous pour filtrer les cartes.</p>
+        <div class="filter-buttons">
+          <button class="primary-btn" (click)="togglePendingCards()">Cartes en Attente ({{ cartesEnAttente.length }})</button>
+          <button class="primary-btn" (click)="toggleValidatedCards()">Cartes Validées ({{ cartesValidees.length }})</button>
+        </div>
+        <ng-container *ngIf="showPendingCardsList">
+          <h4 class="sub-section-title"><fa-icon [icon]="faHourglassHalf"></fa-icon> Liste des Cartes en Attente</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Carte</th>
+                  <th>Numéro</th>
+                  <th>Expiration</th>
+                  <th>Client</th> <!-- Nouvelle colonne -->
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let carte of cartesEnAttente">
+                  <td>{{ carte.id }}</td>
+                  <td>{{ carte.numero }}</td>
+                  <td>{{ carte.dateExpiration | date: 'MM/yy' }}</td>
+                  <td>{{ carte.clientNom }} (ID: {{ carte.clientId }})</td>
+                  <td>
+                    <button class="action-icon-btn validate-btn" (click)="validerCarte(carte.id)" title="Valider"><fa-icon [icon]="faCheck"></fa-icon></button>
+                    <button class="action-icon-btn delete-btn" (click)="supprimerCarte(carte.id)" title="Supprimer"><fa-icon [icon]="faTrashAlt"></fa-icon></button>
+                  </td>
+                </tr>
+                <tr *ngIf="cartesEnAttente.length === 0">
+                  <td colspan="5">Aucune carte en attente.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="showValidatedCardsList">
+          <h4 class="sub-section-title"><fa-icon [icon]="faCheckCircle"></fa-icon> Liste des Cartes Validées</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Carte</th>
+                  <th>Numéro</th>
+                  <th>Expiration</th>
+                  <th>Client</th> <!-- Nouvelle colonne -->
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let carte of cartesValidees">
+                  <td>{{ carte.id }}</td>
+                  <td>{{ carte.numero }}</td>
+                  <td>{{ carte.dateExpiration | date: 'MM/yy' }}</td>
+                  <td>{{ carte.clientNom }} (ID: {{ carte.clientId }})</td>
+                  <td>
+                    <button class="action-icon-btn revert-btn" (click)="remettreEnAttente(carte.id)" title="Remettre en attente"><fa-icon [icon]="faReply"></fa-icon></button>
+                    <button class="action-icon-btn delete-btn" (click)="supprimerCarte(carte.id)" title="Supprimer"><fa-icon [icon]="faTrashAlt"></fa-icon></button>
+                  </td>
+                </tr>
+                <tr *ngIf="cartesValidees.length === 0">
+                  <td colspan="5">Aucune carte validée.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="activeSection === 'problemes'">
+      <section class="dashboard-section card">
+        <h3 class="section-title"><fa-icon [icon]="faExclamationCircle"></fa-icon> Gestion des Problèmes Clients</h3>
+        <p>Voici la liste de tous les problèmes signalés par les clients.</p>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Problème</th>
+                <th>Description</th>
+                <th>Date Signalement</th>
+                <th>Statut</th>
+                <th>Client</th> <!-- Nouvelle colonne -->
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let problem of problemes">
+                <td>{{ problem.id }}</td>
+                <td>{{ problem.description }}</td>
+                <td>{{ problem.dateSignalement | date: 'mediumDate' }}</td>
+                <td>{{ problem.statut }}</td>
+                <td>{{ problem.clientNom }} (ID: {{ problem.clientId }})</td>
+                <td>
+                  <button class="action-icon-btn view-btn" title="Voir les détails"><fa-icon [icon]="faEye"></fa-icon></button>
+                  <!-- Vous pouvez ajouter des actions ici pour résoudre ou répondre aux problèmes -->
+                </td>
+              </tr>
+              <tr *ngIf="problemes.length === 0">
+                <td colspan="6">Aucun problème signalé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </ng-container>
+
+    <!-- Nouvelle section optionnelle pour afficher tous les clients si nécessaire -->
+    <!-- <ng-container *ngIf="activeSection === 'clients'">
+      <section class="dashboard-section card">
+        <h3 class="section-title"><fa-icon [icon]="faUserCircle"></fa-icon> Liste de tous les Clients</h3>
+        <p>Gérez les informations de tous les clients.</p>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Client</th>
+                <th>Nom Complet</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let client of clients">
+                <td>{{ client.id }}</td>
+                <td>{{ client.nomComplet }}</td>
+                <td>{{ client.email }}</td>
+                <td>
+                  <button class="action-icon-btn view-btn" title="Voir les détails du client"><fa-icon [icon]="faEye"></fa-icon></button>
+                </td>
+              </tr>
+              <tr *ngIf="clients.length === 0">
+                <td colspan="4">Aucun client trouvé.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </ng-container> -->
+
+    <ng-container *ngIf="activeSection === 'settings'">
+      <section class="dashboard-section card settings-section">
+        <h3 class="section-title"><fa-icon [icon]="faCogs"></fa-icon> Paramètres Gestionnaire</h3>
+        <div class="settings-options">
+          <h4>Notifications</h4>
+          <input type="checkbox" id="notifEmailMgr" checked> <label for="notifEmailMgr">Recevoir notifications par Email</label><br>
+          <input type="checkbox" id="notifSMSMgr"> <label for="notifSMSMgr">Recevoir notifications par SMS</label>
+        </div>
+      </section>
+    </ng-container>
+  </main>
+</div>

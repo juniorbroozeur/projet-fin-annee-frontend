@@ -1,0 +1,133 @@
+/* Structure générale */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f2f5f9;
+  padding: 20px;
+}
+
+.login-box {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Partie gauche */
+.login-left {
+  flex: 1;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-left h2 {
+  margin-top: 20px;
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.stb-logo {
+  width: 80px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+/* Champs de saisie */
+.input-group {
+  display: flex;
+  align-items: center;
+  background-color: #f4f6f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+}
+
+.input-group .icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.input-group input {
+  border: none;
+  background: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Checkbox "Se souvenir de moi" */
+.remember-me {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.remember-me input {
+  margin-right: 8px;
+}
+
+.login-button {
+  background-color: #3949ab;
+  color: white;
+  padding: 10px 20px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #303f9f;
+}
+
+/* Lien mot de passe oublié */
+.forgot-password {
+  font-size: 13px;
+  color: #555;
+}
+
+.forgot-password a {
+  color: #3949ab;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* Message d'erreur */
+.error-message {
+  color: red;
+  font-size: 13px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Partie droite (image banque) */
+.login-right {
+  flex: 1;
+  background-color: #f0f0f0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bank-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}

@@ -1,0 +1,136 @@
+<!-- src/app/pages/admin-dashboard.component.html -->
+
+<div class="admin-dashboard-wrapper">
+  <!-- Sidebar de l'Admin -->
+  <aside class="sidebar">
+    <div class="logo">Admin Panel</div>
+    <nav class="nav-links">
+      <a (click)="selectSection('dashboard')" [class.active]="activeSection === 'dashboard'">
+        <fa-icon [icon]="faDashboard"></fa-icon> Tableau de Bord
+      </a>
+      <a (click)="selectSection('users')" [class.active]="activeSection === 'users'">
+        <fa-icon [icon]="faUser"></fa-icon> Gestion des Utilisateurs
+      </a>
+      <a (click)="selectSection('settings')" [class.active]="activeSection === 'settings'">
+        <fa-icon [icon]="faCogs"></fa-icon> Paramètres
+      </a>
+      <a (click)="logout()" class="logout-link">
+        <fa-icon [icon]="faSignOutAlt"></fa-icon> Déconnexion
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Contenu principal -->
+  <main class="main-content">
+    <header class="header">
+      <div class="search-bar">
+        <input type="text" placeholder="Rechercher..." [(ngModel)]="recherche" name="globalSearch">
+        <fa-icon [icon]="faSearch"></fa-icon>
+      </div>
+      <div class="user-info">
+        <fa-icon [icon]="faBell"></fa-icon>
+        <fa-icon [icon]="faEnvelope"></fa-icon>
+        <span>Admin User</span>
+        <fa-icon [icon]="faChevronDown"></fa-icon>
+      </div>
+    </header>
+
+    <!-- Messages globaux -->
+    <p *ngIf="message" class="success-message">{{ message }}</p>
+    <p *ngIf="erreur" class="error-message">{{ erreur }}</p>
+
+    <div class="dashboard-sections">
+      <!-- Tableau de Bord -->
+      <ng-container *ngIf="activeSection === 'dashboard'">
+        <div class="dashboard-section card">
+          <h2><fa-icon [icon]="faDashboard"></fa-icon> Aperçu du Tableau de Bord</h2>
+          <p>Bienvenue dans votre tableau de bord administrateur.</p>
+          <div class="info-cards-overview">
+            <div class="info-card">
+              <div class="card-icon"><fa-icon [icon]="faUser"></fa-icon></div>
+              <div class="card-content">
+                <h3>Utilisateurs Totaux</h3>
+                <p class="card-value">{{ utilisateurs.length }}</p>
+                <span>Clients, Gestionnaires, Admins</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Gestion des Utilisateurs -->
+      <ng-container *ngIf="activeSection === 'users'">
+        <div class="dashboard-section card detail-section">
+          <h2><fa-icon [icon]="faUser"></fa-icon> Gestion des Utilisateurs</h2>
+
+          <h3>Créer un nouveau compte utilisateur</h3>
+          <form (ngSubmit)="creerCompteClient()" class="form-create-user">
+            <input type="text" [(ngModel)]="nouveauClient.nom" name="nom" placeholder="Nom complet" required>
+            <input type="email" [(ngModel)]="nouveauClient.email" name="email" placeholder="Adresse Email" required>
+            <input type="password" [(ngModel)]="nouveauClient.motDePasse" name="motDePasse" placeholder="Mot de passe" required>
+            <input type="text" [(ngModel)]="nouveauClient.nomAgence" name="nomAgence" placeholder="Nom de l'agence (si client)">
+            <input type="text" [(ngModel)]="nouveauClient.region" name="region" placeholder="Région (si client)">
+
+            <!-- ✅ Champ pour sélectionner le rôle -->
+            <select [(ngModel)]="nouveauClient.role" name="role" required>
+              <option value="" disabled selected>-- Sélectionner un rôle --</option>
+              <option value="client">Client</option>
+              <option value="gestionnaire">Gestionnaire</option>
+              <option value="admin">Admin</option>
+            </select>
+
+            <button type="submit" class="create-btn">Créer Utilisateur</button>
+          </form>
+
+          <h3>Liste des utilisateurs</h3>
+          <div class="table-responsive">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom</th>
+                  <th>Email</th>
+                  <th>Rôle</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of utilisateursFiltres">
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.nom }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>
+                    <button (click)="supprimerUtilisateur(user.id)" class="action-btn delete-btn">
+                      <fa-icon [icon]="faTrashAlt"></fa-icon> Supprimer
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="utilisateursFiltres.length === 0">
+                  <td colspan="5" class="no-data">Aucun utilisateur trouvé.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Paramètres -->
+      <ng-container *ngIf="activeSection === 'settings'">
+        <div class="dashboard-section card">
+          <h2><fa-icon [icon]="faCogs"></fa-icon> Paramètres</h2>
+          <p>Options et configurations spécifiques.</p>
+          <div class="settings-options">
+            <h4>Gestion des Logs</h4>
+            <button class="primary-btn">Voir les logs</button>
+            <button class="primary-btn">Purger les logs</button>
+
+            <h4>Gestion des Accès</h4>
+            <button class="primary-btn">Définir les rôles</button>
+            <button class="primary-btn">Réinitialiser les mots de passe</button>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </main>
+</div>
